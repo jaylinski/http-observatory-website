@@ -1,5 +1,9 @@
-<%= require ('html-loader?interpolate!./partials/header.html') %>
+import baseLayout from './layouts/base.js';
+import progressBar from './partials/progressBar.js';
+import constants from './../js/constants.js';
 
+const title = `${constants.title} – Analysis`;
+const content = `
     <nav>
         <div id="nav-tab" class="nav nav-tabs flex-column flex-md-row" role="tablist">
             <a class="nav-item nav-link active" id="nav-http-tab" href="#http" data-toggle="tab" data-target="#http-tab" role="tab" aria-controls="nav-http" aria-selected="true"><span data-octicon="chevron-right"> </span>HTTP Observatory</a>
@@ -13,7 +17,7 @@
         <!-- HTTP Observatory -->
         <div class="tab-pane active" id="http-tab" role="tabpanel" aria-labelledby="nav-http-tab">
             <!-- progress bar -->
-            <%= require ('mustache-loader!html-loader?interpolate!./partials/progress-bar.html')({id: 'http'}) %>
+            ${progressBar('http')}
 
             <div class="d-none alert alert-danger text-center" id="http-status-code-alert">
                 This site returned an HTTP status code other than <strong>200 (OK)</strong>, which may cause its results to be inaccurate.
@@ -52,7 +56,7 @@
         <!-- TLS Observatory -->
         <div class="tab-pane" id="tls-tab" role="tabpanel" aria-labelled-by="nav-tls-tab">
             <!-- progress bar -->
-            <%= require ('mustache-loader!html-loader?interpolate!./partials/progress-bar.html')({id: 'tls'}) %>
+            ${progressBar('tls')}
 
             <div class="d-none" id="tls-results">
                 <!-- invalid cert warning panel -->
@@ -94,7 +98,7 @@
 
             <!-- progress bar -->
             <span id="ssh-progress-bar-container" class="d-none">
-                <%= require ('mustache-loader!html-loader?interpolate!./partials/progress-bar.html')({id: 'ssh'}) %>
+                ${progressBar('ssh')}
             </span>
 
             <div class="d-none" id="ssh-results">
@@ -144,5 +148,6 @@
             <%= require ('html-loader?interpolate!./analyze/third-party/hstspreload.html') %>
         </div>
     </div>
+`;
 
-<%= require ('html-loader?interpolate!./partials/footer.html') %>
+export default `${baseLayout(title, content)}`;

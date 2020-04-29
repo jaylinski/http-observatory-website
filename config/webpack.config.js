@@ -54,28 +54,23 @@ plugins = [
   }),
   new HtmlWebpackPlugin({
     filename: 'index.html',
-    title: 'Mozilla Observatory',
-    template: 'src/templates/index.html'
+    template: 'src/templates/index.js'
   }),
   new HtmlWebpackPlugin({
     filename: 'analyze/index.html',
-    title: 'Mozilla Observatory – Analysis',
-    template: 'src/templates/analyze.html'
+    template: 'src/templates/analyze.js'
   }),
   new HtmlWebpackPlugin({
     filename: 'faq/index.html',
-    title: 'Mozilla Observatory – Frequently Asked Questions',
-    template: 'src/templates/faq.html'
+    template: 'src/templates/faq.js'
   }),
   new HtmlWebpackPlugin({
     filename: 'statistics/index.html',
-    title: 'Mozilla Observatory – Statistics',
-    template: 'src/templates/statistics.html'
+    template: 'src/templates/statistics.js'
   }),
   new HtmlWebpackPlugin({
     filename: 'terms/index.html',
-    title: 'Mozilla Observatory – Legal &amp; Privacy Terms',
-    template: 'src/templates/terms.html'
+    template: 'src/templates/terms.js'
   }),
   new SriPlugin({
     hashFuncNames: ['sha256']

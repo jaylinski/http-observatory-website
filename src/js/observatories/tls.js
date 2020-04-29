@@ -1,16 +1,14 @@
 import { capitalize, forEach, includes, map, round, without } from 'lodash';
-import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js'
+import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js';
 
 import $ from 'jquery';
 import constants from '../constants.js';
 import utils from '../utils.js';
 
-
 const state = {
   count: 0,
   output: {},
 };
-
 
 const insert = async () => {
   var aead;
@@ -38,7 +36,7 @@ const insert = async () => {
     intermediate: 'Intermediate',
     modern: 'Modern',
     bad: 'Insecure',
-    'non compliant': 'Non-compliant'
+    'non compliant': 'Non-compliant',
   };
 
   // Loop through the analyzers and store to an object
@@ -69,7 +67,8 @@ const insert = async () => {
 
   mozillaConfigurationLevel = configLevelDesc[analyzers.mozillaEvaluationWorker.level];
   if (mozillaConfigurationLevel === 'Non-compliant') {
-    mozillaConfigurationLevelDescription = 'Non-compliant\n\nPlease note that non-compliance simply means that the server\'s configuration is either more or less strict than a pre-defined Mozilla configuration level.';
+    mozillaConfigurationLevelDescription =
+      "Non-compliant\n\nPlease note that non-compliance simply means that the server's configuration is either more or less strict than a pre-defined Mozilla configuration level.";
   } else {
     mozillaConfigurationLevelDescription =
       configLevelDesc[analyzers.mozillaEvaluationWorker.level];
@@ -87,7 +86,7 @@ const insert = async () => {
     results_url: state.results_url,
     scan_id: results.id,
     score: round(analyzers.mozillaGradingWorker.grade),
-    target: results.target
+    target: results.target,
   };
 
   // now let's handle the certificate stuff
@@ -100,7 +99,7 @@ const insert = async () => {
     key: cert.key.alg + ' ' + cert.key.size + ' bits',
     sig_alg: cert.signatureAlgorithm,
     valid_from: cert.validity.notBefore.split('T')[0],
-    valid_to: cert.validity.notAfter.split('T')[0]
+    valid_to: cert.validity.notAfter.split('T')[0],
   };
 
   // add the curve algorithm, if it's there
@@ -111,7 +110,7 @@ const insert = async () => {
   // now it's time for the ciphers table
   forEach(results.connection_info.ciphersuite, function suites(suite, i) {
     cipher = suite.cipher;
-    aead = (cipher.indexOf('-GCM') !== -1 || cipher.indexOf('POLY1305') !== -1) ? 'Yes' : 'No';
+    aead = cipher.indexOf('-GCM') !== -1 || cipher.indexOf('POLY1305') !== -1 ? 'Yes' : 'No';
     keySize = suite.pubkey === undefined ? '--' : suite.pubkey.toString() + ' bits';
     pfs = suite.pfs === 'None' ? 'No' : 'Yes';
     protos = [];
@@ -128,8 +127,8 @@ const insert = async () => {
 
     // get the code point
     point = suite.code.toString(16).toUpperCase();
-    point = '0'.repeat(4 - point.length) + point;  // padd with 0s
-    point = '0x' + point[1] + point[0] + ' 0x' + point[2] + point[3];  // wtf endianness
+    point = '0'.repeat(4 - point.length) + point; // padd with 0s
+    point = '0x' + point[1] + point[0] + ' 0x' + point[2] + point[3]; // wtf endianness
 
     // for each supported protocol (TLS 1.0, etc.)
     forEach(suite.protocols, function protocols(protocol) {
@@ -155,7 +154,7 @@ const insert = async () => {
     caa: analyzers.caaWorker.has_caa === true ? 'Yes, on ' + analyzers.caaWorker.host : 'No',
     chooser: results.connection_info.serverside === true ? 'Server' : 'Client',
     ocsp_stapling: ocspStapling,
-    oldest_clients: minClients.join(', ')
+    oldest_clients: minClients.join(', '),
   };
 
   // remove the oldest client row if it's undefined
@@ -166,13 +165,14 @@ const insert = async () => {
   // And then the suggestions object
   state.output.suggestions = {
     modern: prettify(analyzers.mozillaEvaluationWorker.failures.modern),
-    intermediate: prettify(analyzers.mozillaEvaluationWorker.failures.intermediate)
+    intermediate: prettify(analyzers.mozillaEvaluationWorker.failures.intermediate),
   };
 
   // we only need the intermediate suggestions if it's not already intermediate
   if (mozillaConfigurationLevel === 'Intermediate') {
     $('#tls-suggestions-intermediate-row').remove();
-  } else if (mozillaConfigurationLevel === 'Modern') {  // no need for suggestions at all {
+  } else if (mozillaConfigurationLevel === 'Modern') {
+    // no need for suggestions at all {
     $('#tls-suggestions').remove();
   }
 
@@ -185,13 +185,15 @@ const insert = async () => {
   utils.tableify(cipherTable, 'tls-ciphers-table', [1, 2, 3, 4]);
 
   // clean up the protocol support table
-  $('#tls-ciphers-table').find('td').each(function f() {
-    if ($(this).text() === 'Yes') {
-      $(this).empty().append(utils.getOcticon('check'));
-    } else if ($(this).text() === 'No') {
-      $(this).empty().append(utils.getOcticon('x'));
-    }
-  });
+  $('#tls-ciphers-table')
+    .find('td')
+    .each(function f() {
+      if ($(this).text() === 'Yes') {
+        $(this).empty().append(utils.getOcticon('check'));
+      } else if ($(this).text() === 'No') {
+        $(this).empty().append(utils.getOcticon('x'));
+      }
+    });
 
   // similarly, show the warning if the certificate isn't trusted
   if (results.is_valid === false) {
@@ -210,9 +212,9 @@ const insert = async () => {
   $('#tls-results').removeClass('d-none');
 };
 
-
 const load = async (rescan, initiateScanOnly) => {
-  var CERTIFICATE_EXPLAINER_URL = 'https://tls-observatory.services.mozilla.com/static/certsplainer.html';
+  var CERTIFICATE_EXPLAINER_URL =
+    'https://tls-observatory.services.mozilla.com/static/certsplainer.html';
   const target = utils.getTarget();
 
   initiateScanOnly = typeof initiateScanOnly !== 'undefined' ? initiateScanOnly : false;
@@ -236,18 +238,22 @@ const load = async (rescan, initiateScanOnly) => {
       initiateScanOnly: initiateScanOnly,
       dataType: 'json',
       method: 'POST',
-      error: () => { utils.errorResults('Scanner unavailable', 'tls-summary'); },
+      error: () => {
+        utils.errorResults('Scanner unavailable', 'tls-summary');
+      },
       success: function s(data) {
         state.scan_id = data.scan_id;
 
-        if (this.initiateScanOnly) { return; }
+        if (this.initiateScanOnly) {
+          return;
+        }
 
-        load();  // retrieve the results
+        load(); // retrieve the results
       },
-      url: constants.urls.tls + 'scan'
+      url: constants.urls.tls + 'scan',
     });
 
-  // scan initiated, but we don't have the results
+    // scan initiated, but we don't have the results
   } else if (state.results === undefined) {
     // set the results URL in the output summary
     state.results_url = utils.linkify(constants.urls.tls + 'results?id=' + state.scan_id);
@@ -255,11 +261,13 @@ const load = async (rescan, initiateScanOnly) => {
     // retrieve results
     $.ajax({
       data: {
-        id: state.scan_id
+        id: state.scan_id,
       },
       dataType: 'json',
       method: 'GET',
-      error: () => { utils.errorResults('Scanner unavailable', 'tls-summary'); },
+      error: () => {
+        utils.errorResults('Scanner unavailable', 'tls-summary');
+      },
       success: async (data) => {
         // not yet completed
         if (data.completion_perc !== 100) {
@@ -267,12 +275,12 @@ const load = async (rescan, initiateScanOnly) => {
           load();
         } else {
           state.results = data;
-          load();  // retrieve the cert
+          load(); // retrieve the cert
         }
       },
-      url: constants.urls.tls + 'results'
+      url: constants.urls.tls + 'results',
     });
-  // scan completed, results collected, now we need to fetch the certificate
+    // scan completed, results collected, now we need to fetch the certificate
   } else {
     // stop here and error out if there is no TLS
     if (state.results.has_tls === false) {
@@ -281,49 +289,88 @@ const load = async (rescan, initiateScanOnly) => {
     }
 
     // set the certificate URL in the output summary
-    state.certificate_url = utils.linkify(constants.urls.tls + 'certificate?id=' + state.results.cert_id, state.results.cert_id);
-    state.explainer_url = utils.linkify(CERTIFICATE_EXPLAINER_URL + '?id=' + state.results.cert_id, state.results.cert_id, state.results.cert_id);
+    state.certificate_url = utils.linkify(
+      constants.urls.tls + 'certificate?id=' + state.results.cert_id,
+      state.results.cert_id
+    );
+    state.explainer_url = utils.linkify(
+      CERTIFICATE_EXPLAINER_URL + '?id=' + state.results.cert_id,
+      state.results.cert_id,
+      state.results.cert_id
+    );
 
     $.ajax({
       data: {
-        id: state.results.cert_id
+        id: state.results.cert_id,
       },
       dataType: 'json',
       method: 'GET',
-      error: () => { utils.errorResults('Scanner unavailable', 'tls-summary'); },
-      success: data => {
-        state.certificate = data;
-        insert();  // put things into the page
+      error: () => {
+        utils.errorResults('Scanner unavailable', 'tls-summary');
       },
-      url: constants.urls.tls + 'certificate'
+      success: (data) => {
+        state.certificate = data;
+        insert(); // put things into the page
+      },
+      url: constants.urls.tls + 'certificate',
     });
   }
 };
 
-
 // make things pretty; this is kind of a complicated mess
-const prettify = a => {
+const prettify = (a) => {
   a = map(a, capitalize)
-     .map(s => { return s.replace(/ecdsa/g, 'ECDSA'); })
-     .map(s => { return s.replace(/ecdhe/g, 'ECDHE'); })
-     .map(s => { return s.replace(/dhe/g, 'DHE'); })
-     .map(s => { return s.replace(/tlsv/g, 'TLS '); })
-     .map(s => { return s.replace(/TLS 1,/g, 'TLS 1.0,'); })
-     .map(s => { return s.replace(/sslv/g, 'SSL '); })
-     .map(s => { return s.replace(/ocsp/g, 'OCSP'); })
-     .map(s => { return s.replace(/rsa/g, 'RSA'); })
-     .map(s => { return s.replace(/-sha/g, '-SHA'); })
-     .map(s => { return s.replace(/des-/g, 'DES-'); })
-     .map(s => { return s.replace(/edh-/g, 'EDH-'); })
-     .map(s => { return s.replace(/-cbc/g, '-CBC'); })
-     .map(s => { return s.replace(/aes/g, 'AES'); })
-     .map(s => { return s.replace(/-chacha20/g, '-CHACHA20'); })
-     .map(s => { return s.replace(/-poly1305/g, '-POLY1305'); })
-     .map(s => { return s.replace(/-gcm/g, '-GCM'); });
+    .map((s) => {
+      return s.replace(/ecdsa/g, 'ECDSA');
+    })
+    .map((s) => {
+      return s.replace(/ecdhe/g, 'ECDHE');
+    })
+    .map((s) => {
+      return s.replace(/dhe/g, 'DHE');
+    })
+    .map((s) => {
+      return s.replace(/tlsv/g, 'TLS ');
+    })
+    .map((s) => {
+      return s.replace(/TLS 1,/g, 'TLS 1.0,');
+    })
+    .map((s) => {
+      return s.replace(/sslv/g, 'SSL ');
+    })
+    .map((s) => {
+      return s.replace(/ocsp/g, 'OCSP');
+    })
+    .map((s) => {
+      return s.replace(/rsa/g, 'RSA');
+    })
+    .map((s) => {
+      return s.replace(/-sha/g, '-SHA');
+    })
+    .map((s) => {
+      return s.replace(/des-/g, 'DES-');
+    })
+    .map((s) => {
+      return s.replace(/edh-/g, 'EDH-');
+    })
+    .map((s) => {
+      return s.replace(/-cbc/g, '-CBC');
+    })
+    .map((s) => {
+      return s.replace(/aes/g, 'AES');
+    })
+    .map((s) => {
+      return s.replace(/-chacha20/g, '-CHACHA20');
+    })
+    .map((s) => {
+      return s.replace(/-poly1305/g, '-POLY1305');
+    })
+    .map((s) => {
+      return s.replace(/-gcm/g, '-GCM');
+    });
   a.sort();
 
   return utils.listify(a, true);
-}
-
+};
 
 export default { load, state };

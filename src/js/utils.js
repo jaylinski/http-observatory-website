@@ -9,7 +9,6 @@ dayjs.extend(LocalizedFormat);
 
 import constants from './constants.js';
 
-
 const noQueryServer = constants.noQueryParameterServers.includes(window.location.hostname);
 
 const average = (list) => {
@@ -26,7 +25,6 @@ const average = (list) => {
 
   return sum / list.length;
 };
-
 
 const getTarget = () => {
   // domains that support /analyze/mozilla.com
@@ -66,7 +64,6 @@ const linkify = (url, shortText, longText) => {
   return a;
 };
 
-
 // take an array and turn it into an unordered list, if it's > 1 item
 const listify = (list, force = false, classes = []) => {
   var li;
@@ -99,9 +96,8 @@ const listify = (list, force = false, classes = []) => {
     ul.appendChild(li);
   });
 
-  return (ul);
+  return ul;
 };
-
 
 // take a piece of text and a bunch of keywords and monospace
 // every instance of those keywords
@@ -123,8 +119,7 @@ const monospaceify = (text, keywords) => {
   return text;
 };
 
-
-const prettyNumberify = numbersObject => {
+const prettyNumberify = (numbersObject) => {
   // convert all the miscellaneous numbers to their locale representation
   forEach(numbersObject, function (v, k) {
     if (typeof v === 'number') {
@@ -135,11 +130,9 @@ const prettyNumberify = numbersObject => {
   return numbersObject;
 };
 
-
 const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
-
 
 // take a list of lists and push it into an existing table
 const tableify = (list, tableId, centeredRows = []) => {
@@ -147,7 +140,7 @@ const tableify = (list, tableId, centeredRows = []) => {
   var tbody = document.createElement('tbody');
   table.appendChild(tbody);
 
-  forEach(list, row => {
+  forEach(list, (row) => {
     var tr = document.createElement('tr');
 
     forEach(row, (col, index) => {
@@ -180,14 +173,11 @@ const tableify = (list, tableId, centeredRows = []) => {
         td.appendChild(col);
       }
 
-
       tr.appendChild(td);
-
     });
     tbody.appendChild(tr);
   });
 };
-
 
 const toLocalTime = (timeString, format) => {
   if (format === undefined) {
@@ -197,15 +187,15 @@ const toLocalTime = (timeString, format) => {
   }
 };
 
-
-const urlParse = url => {
+const urlParse = (url) => {
   var a = document.createElement('a');
   a.href = url;
 
   // If the URL doesn't contain a scheme, the hostname won't be in the url
   // For the purposes of the Observatory, we'll just prepend http:// or https:// for :443 and try again
   if (!a.protocol || !startsWith(url.toLowerCase(), 'http')) {
-    if (includes(url, ':443')) {  // this is kind of a bad shortcut, but I'm lazy
+    if (includes(url, ':443')) {
+      // this is kind of a bad shortcut, but I'm lazy
       a.href = 'https://' + url;
     } else {
       a.href = 'http://' + url;
@@ -218,26 +208,26 @@ const urlParse = url => {
     path: a.pathname,
     port: a.port,
     query: a.search,
-    scheme: a.protocol
+    scheme: a.protocol,
   };
 };
 
-
-const getQueryParameter = param => {
+const getQueryParameter = (param) => {
   return new URLSearchParams(window.location.search).get(param);
 };
-
 
 /* result handling */
 
 const errorResults = (error, id) => {
   // Set the error text and make it a red bar and remove the stripes and swirlies
-  $('#' + id + '-progress-bar-text').text(error).removeClass('progress-bar-striped').addClass('bg-danger');
+  $('#' + id + '-progress-bar-text')
+    .text(error)
+    .removeClass('progress-bar-striped')
+    .addClass('bg-danger');
 };
 
-
 const insertGrade = (grade, id) => {
-  var letter = grade.substr(0, 1);  // default case
+  var letter = grade.substr(0, 1); // default case
 
   // locate the elements on the page
   var domContainer = $('#' + id + '-grade-container');
@@ -258,7 +248,7 @@ const insertGrade = (grade, id) => {
       letter = constants.character_mappings.xmark;
       domContainer.toggleClass('grade-f');
       break;
-    case 'Insecure':  // TODO: kill all this once the TLS Observatory is returning a correct grade
+    case 'Insecure': // TODO: kill all this once the TLS Observatory is returning a correct grade
       letter = 'F';
       domContainer.toggleClass('grade-f');
       break;
@@ -266,7 +256,7 @@ const insertGrade = (grade, id) => {
       domContainer.toggleClass('grade-f');
       break;
     case 'Intermediate':
-      letter = constants.character_mappings.latini;  // latin capital letter i
+      letter = constants.character_mappings.latini; // latin capital letter i
       domContainer.toggleClass('grade-a').toggleClass('grade-i');
       break;
     case 'Modern':
@@ -295,14 +285,13 @@ const insertGrade = (grade, id) => {
           domModifier.addClass('grade-with-modifier-wide');
           break;
         default:
-          // pass
+        // pass
       }
     } else {
       domModifier.addClass('grade-with-modifier-narrow'); // C-, B-, etc.
     }
   }
 };
-
 
 const insertResults = (results, id) => {
   // Write all the various important parts of the scan into the page
@@ -316,12 +305,10 @@ const insertResults = (results, id) => {
   });
 };
 
-
-const showResults = id => {
+const showResults = (id) => {
   // simply delete the progress bar and the results should show up
   $('#' + id + '-progress-bar').remove();
 };
-
 
 // cookie handling
 const setCookie = (name, value, days) => {
@@ -329,19 +316,18 @@ const setCookie = (name, value, days) => {
 
   if (days) {
     var date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     var expires = '; expires=' + date.toGMTString();
   }
 
   document.cookie = name + '=' + value + expires + '; path=/';
 };
 
-
-const readCookie = name => {
+const readCookie = (name) => {
   var nameEQ = name + '=';
   var ca = document.cookie.split(';');
 
-  for(var i=0; i < ca.length; i++) {
+  for (var i = 0; i < ca.length; i++) {
     var c = ca[i];
 
     while (c.charAt(0) == ' ') {
@@ -356,22 +342,21 @@ const readCookie = name => {
   return null;
 };
 
-
-const deleteCookie = name => {
+const deleteCookie = (name) => {
   setCookie(name, '', -1);
 };
 
-
 const getOcticon = (icon, width = 24, height = 24) => {
   const template = document.createElement('template');
-  template.innerHTML = octicons[icon].toSVG({
-    width,
-    height,
-  }).trim();
-  
+  template.innerHTML = octicons[icon]
+    .toSVG({
+      width,
+      height,
+    })
+    .trim();
+
   return template.content.firstChild;
 };
-
 
 export default {
   average,

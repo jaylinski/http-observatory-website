@@ -1,9 +1,12 @@
-<%= require ('html-loader?interpolate!./partials/header.html') %>
+import baseLayout from './layouts/base.js';
+import constants from './../js/constants.js';
 
+const title = `${constants.title} – Legal & Privacy Terms`;
+const content = `
     <div id="terms">
         <h1 class="border-bottom border-light mb-4 pb-2">Legal &amp; Privacy Terms</h1>
 
-        <p><a href="/"><%= require('../js/constants.js').title %></a> is an open-source developer tool.  Before using this tool, there are a few important things you should know:</p>
+        <p><a href="/">${constants.title}</a> is an open-source developer tool.  Before using this tool, there are a few important things you should know:</p>
 
         <ol>
             <li>You should only use the Observatory API to inspect websites whose owners have given you permission to do so.  Test scores and scan results are posted publicly unless you choose in advance to hide them from public view.  Your use of this tool is subject to our <a href="https://www.mozilla.org/en-US/about/legal/terms/mozilla/">Websites &amp; Communications Terms of Use</a>, including the <a href="https://www.mozilla.org/en-US/about/legal/acceptable-use/">Conditions of Use</a> and <a href="https://www.mozilla.org/en-US/privacy/websites">Privacy Notice</a> referenced therein.</li>
@@ -15,6 +18,6 @@
             <li>This tool is available &ldquo;as is&rdquo; and Mozilla does not guarantee the accuracy of scan results.</li>
         </ol>
 
-    </div>
+    </div>`;
 
-<%= require ('html-loader?interpolate!./partials/footer.html') %>
+export default `${baseLayout(title, content)}`;

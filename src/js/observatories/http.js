@@ -1,33 +1,28 @@
 import $ from 'jquery';
 import { forEach, includes, last, size } from 'lodash';
 import dayjs from 'dayjs';
-import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js'
+import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js';
 
 import constants from '../constants.js';
 import utils from '../utils.js';
 import TLS from './tls.js';
-
 
 // is this right?
 const state = {
   count: 0,
 };
 
-
 const load = async () => {
   const target = utils.getTarget();
 
-  submit(
-    target,
-    handle,
-    displayError);
+  submit(target, handle, displayError);
 };
-
 
 const displayError = async (text, statusText) => {
   var error = text;
 
-  if (statusText) {  // jquery callback
+  if (statusText) {
+    // jquery callback
     error = 'HTTP Observatory is down';
   } else {
     error = error.replace(/-/g, ' ');
@@ -43,20 +38,22 @@ const displayError = async (text, statusText) => {
   utils.errorResults(error, 'scan');
 };
 
-
 /* enable the initiate rescan button, and let it start a new site scan */
 const enableInitiateRescanButton = async () => {
   const target = utils.getTarget();
 
-  $('.force-rescan').removeClass('disabled').on('click', function forceRescan() {
-    function reload() { window.location.reload(true); }
+  $('.force-rescan')
+    .removeClass('disabled')
+    .on('click', function forceRescan() {
+      function reload() {
+        window.location.reload(true);
+      }
 
-    TLS.load(true);
-    submit(target, reload, reload, 'POST', true, true);
-    return false;
-  });
+      TLS.load(true);
+      submit(target, reload, reload, 'POST', true, true);
+      return false;
+    });
 };
-
 
 // display the scan results
 const insert = async (scan, results) => {
@@ -71,7 +68,7 @@ const insert = async (scan, results) => {
   var glyphiconAriaLabels = {
     'glyphicon-ok': 'Pass',
     'glyphicon-remove': 'Fail',
-    'glyphicon-minus': 'Not Applicable / Optional'
+    'glyphicon-minus': 'Not Applicable / Optional',
   };
 
   // stuff both scan and state into the HTTPObs object
@@ -82,27 +79,31 @@ const insert = async (scan, results) => {
   if (results.redirection.output.route.length > 0) {
     scan.hostname = utils.urlParse(last(results.redirection.output.route)).host;
     scan.target = target;
-  } else {  // just HTTPS, no redirection
+  } else {
+    // just HTTPS, no redirection
     scan.hostname = scan.target = target;
   }
 
   // bug fixes
   if (scan.hostname === constants.domain) {
-    scan.hostname = scan.target = importantGlyphs + '   ' + scan.hostname + '   ' + importantGlyphs;
+    scan.hostname = scan.target =
+      importantGlyphs + '   ' + scan.hostname + '   ' + importantGlyphs;
   }
 
   // add a test duration
-  scan.test_duration = (dayjs(scan.end_time).unix() - dayjs(scan.start_time).unix());
+  scan.test_duration = dayjs(scan.end_time).unix() - dayjs(scan.start_time).unix();
 
   // convert things to local time
   scan.start_time_l = utils.toLocalTime(scan.start_time);
   scan.end_time_l = utils.toLocalTime(scan.end_time);
 
   // store whether or not they have HTTPS, in the scan object
-  if (includes([
-    'hsts-not-implemented-no-https',
-    'hsts-invalid-cert'],  // no https
-    results['strict-transport-security'].result)) {
+  if (
+    includes(
+      ['hsts-not-implemented-no-https', 'hsts-invalid-cert'], // no https
+      results['strict-transport-security'].result
+    )
+  ) {
     scan.hasHttps = false;
   } else {
     scan.hasHttps = true;
@@ -153,10 +154,10 @@ const insert = async (scan, results) => {
 
   // set the list of monospaced keywords to escape
   monospacedKeywords = [
-    '\'unsafe-inline\'',
-    '\'unsafe-eval\'',
-    '\'unsafe\'',
-    '\'none\'',
+    "'unsafe-inline'",
+    "'unsafe-eval'",
+    "'unsafe'",
+    "'none'",
     'data:',
     'default-src',
     'frame-ancestors',
@@ -184,17 +185,20 @@ const insert = async (scan, results) => {
     'SAMEORIGIN',
     '"0"',
     '"1"',
-    '"1; mode=block"'
+    '"1; mode=block"',
   ];
-
 
   forEach(results, function f(result) {
     var scoreDescription;
     var score = result.score_modifier; // score modifier
 
-    if (score > 0) { score = '+' + score.toString(); }
+    if (score > 0) {
+      score = '+' + score.toString();
+    }
 
-    $('#tests-' + result.name + '-pass').append(result.pass ? utils.getOcticon('check') : utils.getOcticon('x'));
+    $('#tests-' + result.name + '-pass').append(
+      result.pass ? utils.getOcticon('check') : utils.getOcticon('x')
+    );
     $('#tests-' + result.name + '-score').text(score);
     $('#tests-' + result.name + '-score-description').text(result.score_description);
 
@@ -215,34 +219,48 @@ const insert = async (scan, results) => {
   });
 
   // note that HPKP is optional
-  if (includes(['hpkp-not-implemented',
-    'hpkp-not-implemented-no-https',
-    'hpkp-invalid-cert'],
-      results['public-key-pinning'].result)) {
-    $('#tests-public-key-pinning-score-description').text($('#tests-public-key-pinning-score-description').text() + ' (optional)');
+  if (
+    includes(
+      ['hpkp-not-implemented', 'hpkp-not-implemented-no-https', 'hpkp-invalid-cert'],
+      results['public-key-pinning'].result
+    )
+  ) {
+    $('#tests-public-key-pinning-score-description').text(
+      $('#tests-public-key-pinning-score-description').text() + ' (optional)'
+    );
     $('#tests-public-key-pinning-pass').empty().append(utils.getOcticon('dash'));
   }
 
   // same for Referrer Policy
   if ('referrer-policy' in results) {
-    if (includes(['referrer-policy-not-implemented'],
-        results['referrer-policy'].result)) {
-      $('#tests-referrer-policy-score-description').text($('#tests-referrer-policy-score-description').text() + ' (optional)');
+    if (includes(['referrer-policy-not-implemented'], results['referrer-policy'].result)) {
+      $('#tests-referrer-policy-score-description').text(
+        $('#tests-referrer-policy-score-description').text() + ' (optional)'
+      );
     }
 
     // give Referrer Policy a dash, if it's either not implemented or no-referrer-when-downgrade
-    if (includes(['referrer-policy-not-implemented',
-      'referrer-policy-no-referrer-when-downgrade'],
-        results['referrer-policy'].result)) {
+    if (
+      includes(
+        ['referrer-policy-not-implemented', 'referrer-policy-no-referrer-when-downgrade'],
+        results['referrer-policy'].result
+      )
+    ) {
       $('#tests-referrer-policy-pass').empty().append(utils.getOcticon('dash'));
     }
   }
 
   // SRI is optional for sites that use local script and/or don't have script
-  if (includes(['sri-not-implemented-response-not-html',
-    'sri-not-implemented-but-no-scripts-loaded',
-    'sri-not-implemented-but-all-scripts-loaded-from-secure-origin'],
-      results['subresource-integrity'].result)) {
+  if (
+    includes(
+      [
+        'sri-not-implemented-response-not-html',
+        'sri-not-implemented-but-no-scripts-loaded',
+        'sri-not-implemented-but-all-scripts-loaded-from-secure-origin',
+      ],
+      results['subresource-integrity'].result
+    )
+  ) {
     $('#tests-subresource-integrity-pass').empty().append(utils.getOcticon('dash'));
   }
 
@@ -255,12 +273,18 @@ const insert = async (scan, results) => {
   forEach(results['cookies']['output']['data'], (attributes, name) => {
     cookies.push([
       name,
-      attributes.expires === null ? 'Session' : utils.toLocalTime(String(attributes.expires * 1000), 'x'),
+      attributes.expires === null
+        ? 'Session'
+        : utils.toLocalTime(String(attributes.expires * 1000), 'x'),
       $('<code></code>').text(attributes.path)[0],
       attributes.secure ? utils.getOcticon('check') : utils.getOcticon('x'),
       attributes.httponly ? utils.getOcticon('check') : utils.getOcticon('x'),
-      attributes.samesite ? $('<code></code>').text(attributes.samesite)[0] : utils.getOcticon('x'),
-      (name.startsWith('__Host') || name.startsWith('__Secure')) ? utils.getOcticon('check') : utils.getOcticon('x'),
+      attributes.samesite
+        ? $('<code></code>').text(attributes.samesite)[0]
+        : utils.getOcticon('x'),
+      name.startsWith('__Host') || name.startsWith('__Secure')
+        ? utils.getOcticon('check')
+        : utils.getOcticon('x'),
     ]);
   });
 
@@ -274,62 +298,96 @@ const insert = async (scan, results) => {
 
   // let's try to give people a good first step on where they should go from these results
   // TODO: find a cleaner way of doing this
-  if (includes([
-    'cross-origin-resource-sharing-implemented-with-universal-access'],
-    results['cross-origin-resource-sharing'].result)) {
+  if (
+    includes(
+      ['cross-origin-resource-sharing-implemented-with-universal-access'],
+      results['cross-origin-resource-sharing'].result
+    )
+  ) {
     nextStep = 'cross-origin-resource-sharing';
   } else if (!scan.hasHttps) {
     nextStep = 'https';
-  } else if (includes([
-    'redirection-missing',
-    'redirection-not-to-https',
-    'redirection-invalid-cert'],
-    results.redirection.result)) {
+  } else if (
+    includes(
+      ['redirection-missing', 'redirection-not-to-https', 'redirection-invalid-cert'],
+      results.redirection.result
+    )
+  ) {
     nextStep = 'redirection';
-  } else if (includes([
-    'hsts-implemented-max-age-less-than-six-months',
-    'hsts-not-implemented',
-    'hsts-header-invalid'],
-    results['strict-transport-security'].result)) {
+  } else if (
+    includes(
+      [
+        'hsts-implemented-max-age-less-than-six-months',
+        'hsts-not-implemented',
+        'hsts-header-invalid',
+      ],
+      results['strict-transport-security'].result
+    )
+  ) {
     nextStep = 'strict-transport-security';
-  } else if (includes([
-    'cookies-without-secure-flag-but-protected-by-hsts',
-    'cookies-without-secure-flag',
-    'cookies-session-without-httponly-flag',
-    'cookies-session-without-secure-flag'],
-    results.cookies.result)) {
+  } else if (
+    includes(
+      [
+        'cookies-without-secure-flag-but-protected-by-hsts',
+        'cookies-without-secure-flag',
+        'cookies-session-without-httponly-flag',
+        'cookies-session-without-secure-flag',
+      ],
+      results.cookies.result
+    )
+  ) {
     nextStep = 'cookies';
-  } else if (includes([
-    'x-frame-options-not-implemented',
-    'x-frame-options-header-invalid'],
-    results['x-frame-options'].result)) {
+  } else if (
+    includes(
+      ['x-frame-options-not-implemented', 'x-frame-options-header-invalid'],
+      results['x-frame-options'].result
+    )
+  ) {
     nextStep = 'x-frame-options';
-  } else if (includes([
-    'x-content-type-options-not-implemented',
-    'x-content-type-options-header-invalid'],
-    results['x-content-type-options'].result)) {
+  } else if (
+    includes(
+      ['x-content-type-options-not-implemented', 'x-content-type-options-header-invalid'],
+      results['x-content-type-options'].result
+    )
+  ) {
     nextStep = 'x-content-type-options';
-  } else if (includes([
-    'csp-implemented-with-unsafe-eval',
-    'csp-implemented-with-insecure-scheme',
-    'csp-implemented-with-unsafe-inline',
-    'csp-not-implemented',
-    'csp-header-invalid'],
-    results['content-security-policy'].result)) {
+  } else if (
+    includes(
+      [
+        'csp-implemented-with-unsafe-eval',
+        'csp-implemented-with-insecure-scheme',
+        'csp-implemented-with-unsafe-inline',
+        'csp-not-implemented',
+        'csp-header-invalid',
+      ],
+      results['content-security-policy'].result
+    )
+  ) {
     nextStep = 'content-security-policy';
-  } else if (includes([
-    'sri-not-implemented-but-external-scripts-loaded-securely'],
-    results['subresource-integrity'].result)) {
+  } else if (
+    includes(
+      ['sri-not-implemented-but-external-scripts-loaded-securely'],
+      results['subresource-integrity'].result
+    )
+  ) {
     nextStep = 'subresource-integrity';
-  } else if (includes([
-    'referrer-policy-not-implemented',
-    'referrer-policy-unsafe',
-    'referrer-policy-headeer-invalid'],
-    results['referrer-policy'].result)) {
+  } else if (
+    includes(
+      [
+        'referrer-policy-not-implemented',
+        'referrer-policy-unsafe',
+        'referrer-policy-headeer-invalid',
+      ],
+      results['referrer-policy'].result
+    )
+  ) {
     nextStep = 'referrer-policy';
-  } else if (includes([
-    'csp-implemented-with-unsafe-inline-in-style-src-only'],
-    results['content-security-policy'].result)) {
+  } else if (
+    includes(
+      ['csp-implemented-with-unsafe-inline-in-style-src-only'],
+      results['content-security-policy'].result
+    )
+  ) {
     nextStep = 'content-security-policy-unsafe-inline-in-style-src-only';
   }
 
@@ -345,15 +403,21 @@ const insert = async (scan, results) => {
       var id = '#csp-analysis-' + directive;
 
       // these are negated for the purposes of analysis output
-      if (includes([
-        'insecureBaseUri',
-        'insecureFormAction',
-        'insecureSchemeActive',
-        'insecureSchemePassive',
-        'unsafeEval',
-        'unsafeInline',
-        'unsafeInlineStyle',
-        'unsafeObjects'], directive)) {
+      if (
+        includes(
+          [
+            'insecureBaseUri',
+            'insecureFormAction',
+            'insecureSchemeActive',
+            'insecureSchemePassive',
+            'unsafeEval',
+            'unsafeInline',
+            'unsafeInlineStyle',
+            'unsafeObjects',
+          ],
+          directive
+        )
+      ) {
         value = !value;
       }
 
@@ -364,7 +428,6 @@ const insert = async (scan, results) => {
       } else {
         $(id).empty().append(utils.getOcticon('dash'));
       }
-
     });
 
     $('#csp-analysis').removeClass('d-none');
@@ -393,15 +456,16 @@ const insert = async (scan, results) => {
   // Observatory.insertSurveyBanner();
 };
 
-
 const insertHostHistory = async () => {
   var rows = [];
 
   // insert the table into the page
   forEach(state.history, function f(entry) {
-    rows.push([utils.toLocalTime(entry.end_time, 'ddd, DD MMM YYYY HH:mm:ss zz'),
+    rows.push([
+      utils.toLocalTime(entry.end_time, 'ddd, DD MMM YYYY HH:mm:ss zz'),
       entry.score.toString(),
-      entry.grade]);
+      entry.grade,
+    ]);
   });
 
   // sort newest first, limit to ten entries
@@ -417,23 +481,22 @@ const insertHostHistory = async () => {
   Tablesaw.init($('#host-history-table'));
 };
 
-
 const loadHostHistory = async () => {
   const target = utils.getTarget();
-  var API_URL = 'https://http-observatory.security.mozilla.org/api/v1/getHostHistory?host=' + target;
+  var API_URL =
+    'https://http-observatory.security.mozilla.org/api/v1/getHostHistory?host=' + target;
 
   $.ajax({
     method: 'GET',
-    success: data => {
+    success: (data) => {
       state.history = data;
       insertHostHistory();
     },
-    url: API_URL
+    url: API_URL,
   });
 };
 
-
-const handle = async scan => {
+const handle = async (scan) => {
   var failure;
   var retry = false;
   var success;
@@ -447,14 +510,18 @@ const handle = async scan => {
   if (scan.error) {
     /* if it's recent-scan-not-found, start a (hidden) scan and refresh the page */
     if (scan.error === 'recent-scan-not-found') {
-      success = function f() { location.reload(); };
-      failure = function f() { displayError(scan.text); };
+      success = function f() {
+        location.reload();
+      };
+      failure = function f() {
+        displayError(scan.text);
+      };
 
       submit(target, success, failure, 'POST', false, true);
       return false;
     } else if (scan.text) {
-        displayError(scan.text);
-        return false;
+      displayError(scan.text);
+      return false;
     }
   }
 
@@ -482,7 +549,7 @@ const handle = async scan => {
       displayError('Scan failed');
       return false;
     default:
-      // party time!
+    // party time!
   }
 
   // update the progress bar text and try again in a second
@@ -493,7 +560,6 @@ const handle = async scan => {
       displayError('Scan timed out');
       return false;
     }
-
 
     $('#http-progress-bar-text').text(text);
     await utils.sleep(1000);
@@ -512,12 +578,11 @@ const handle = async scan => {
         loadHostHistory();
         insert(this.scan, data);
       },
-      url: constants.urls.api + 'getScanResults?scan=' + scan.scan_id.toString()
+      url: constants.urls.api + 'getScanResults?scan=' + scan.scan_id.toString(),
     });
   }
   return true;
 };
-
 
 // poll the HTTP Observatory
 const submit = async (hostname, successCallback, errorCallback, method, rescan, hidden) => {
@@ -531,17 +596,16 @@ const submit = async (hostname, successCallback, errorCallback, method, rescan, 
   config = {
     data: {
       hidden: hidden.toString(),
-      rescan: rescan.toString()
+      rescan: rescan.toString(),
     },
     dataType: 'json',
     error: errorCallback,
     method: method,
     success: successCallback,
-    url: constants.urls.api + 'analyze?host=' + hostname
+    url: constants.urls.api + 'analyze?host=' + hostname,
   };
 
   $.ajax(config);
 };
-
 
 export default { displayError, load, state, submit };

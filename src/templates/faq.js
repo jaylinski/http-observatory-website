@@ -1,5 +1,8 @@
-<%= require ('html-loader?interpolate!./partials/header.html') %>
+import baseLayout from './layouts/base.js';
+import constants from './../js/constants.js';
 
+const title = `${constants.title} – Frequently Asked Questions`;
+const content = `
     <div>
         <h1 class="mb-4">Frequently Asked Questions</h1>
     </div>
@@ -138,8 +141,7 @@ X-Content-Type-Options: nosniff</pre>
             <p><a href="https://hstspreload.org/">hstspreload.org</a> is the site run by <a href="https://twitter.com/lgarron">@lgarron</a> that manages the HTTP Strict Transport Security (HSTS) preload list. The preload list is a directory of sites that have opted into having browsers connect to their website only over HTTPS, even before they have ever seen an Strict-Transport-Security HTTP header. This helps solve the trust-on-first-use issue, where a man-in-the-middle could prevent a user from ever upgrading to HTTPS and seeing the HSTS header.</p>
         </div>
 
-
     </div>
+`;
 
-<%= require ('html-loader?interpolate!./partials/footer.html') %>
-
+export default `${baseLayout(title, content)}`;

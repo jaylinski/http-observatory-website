@@ -1,15 +1,13 @@
 import $ from 'jquery';
 import { forEach, without } from 'lodash';
-import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js'
+import Tablesaw from '../../../node_modules/tablesaw/dist/tablesaw.jquery.js';
 
 import constants from '../constants.js';
 import utils from '../utils.js';
 
-
 const state = {
-  count: 0
+  count: 0,
 };
-
 
 const insert = async () => {
   // convenience variable
@@ -17,14 +15,17 @@ const insert = async () => {
 
   // combine the compression results
   var compression = results.compression_algorithms_client_to_server.concat(
-    results.compression_algorithms_client_to_server);
+    results.compression_algorithms_client_to_server
+  );
 
-  var authMethods = results.auth_methods.join(', ')
-                                        .replace('password publickey', 'passwords + public key')
-                                        .replace('publickey', 'public key');
+  var authMethods = results.auth_methods
+    .join(', ')
+    .replace('password publickey', 'passwords + public key')
+    .replace('publickey', 'public key');
 
   // Duplicate host key message
-  var duplicateHostKeyIpMsg = 'Yes, ' + results.duplicate_host_key_ips.length.toString() + ' other known IP address';
+  var duplicateHostKeyIpMsg =
+    'Yes, ' + results.duplicate_host_key_ips.length.toString() + ' other known IP address';
   if (results.duplicate_host_key_ips.length > 1) {
     duplicateHostKeyIpMsg += 'es';
   }
@@ -35,7 +36,10 @@ const insert = async () => {
     compliant: results.compliance.compliant ? 'Yes' : 'No',
     compression: without(compression, ['none']).length > 0 ? 'Available' : 'Unavailable',
     duplicate_host_keys: results.duplicate_host_key_ips.length > 0 ? duplicateHostKeyIpMsg : 'No',
-    end_time_l: utils.toLocalTime(results.end_time.replace(" +0000", "+0000"), "YYYY-MM-DD HH:mm:ssZ"),
+    end_time_l: utils.toLocalTime(
+      results.end_time.replace(' +0000', '+0000'),
+      'YYYY-MM-DD HH:mm:ssZ'
+    ),
     grade: results.compliance.grade,
     hostname: results.hostname,
     ip: results.ip,
@@ -43,7 +47,7 @@ const insert = async () => {
     port: results.port,
     server_banner: results.server_banner ? results.server_banner : 'Unknown',
     ssh_lib_cpe: results.ssh_lib_cpe ? results.ssh_lib_cpe : 'Unknown',
-    uuid: state.uuid.split('-')[0]
+    uuid: state.uuid.split('-')[0],
   };
 
   // Grade is either pass or fail in this case
@@ -69,8 +73,7 @@ const insert = async () => {
       recommendation = recommendation[0];
     }
 
-    state.output.compliance_recommendations.push(
-      [utils.listify([recommendation], true)]);
+    state.output.compliance_recommendations.push([utils.listify([recommendation], true)]);
   });
 
   // insert the recommendations table if need be
@@ -81,20 +84,23 @@ const insert = async () => {
   }
 
   // link to the JSON results
-  state.output.uuid = utils.linkify(`${constants.urls.ssh}scan/results?uuid=${state.uuid}`, state.output.uuid, state.output.uuid)
+  state.output.uuid = utils.linkify(
+    `${constants.urls.ssh}scan/results?uuid=${state.uuid}`,
+    state.output.uuid,
+    state.output.uuid
+  );
 
   utils.insertGrade(results.compliance.grade, 'ssh');
   utils.insertResults(state.output, 'ssh');
   utils.showResults('ssh');
 
- // initialize the tablesaws
- Tablesaw.init($('#ssh-misc-table'));
- Tablesaw.init($('#ssh-version-table'));
+  // initialize the tablesaws
+  Tablesaw.init($('#ssh-misc-table'));
+  Tablesaw.init($('#ssh-version-table'));
 
   $('#ssh-progress-bar-container').remove();
   $('#ssh-results').removeClass('d-none');
 };
-
 
 export const load = async () => {
   const target = utils.getTarget();
@@ -107,20 +113,24 @@ export const load = async () => {
   if (state.uuid === undefined) {
     $.ajax({
       method: 'POST',
-      error: function e() { utils.errorResults('Unable to connect', 'ssh'); },
+      error: function e() {
+        utils.errorResults('Unable to connect', 'ssh');
+      },
       success: loadSuccessCallbackInitialize,
-      url: constants.urls.ssh + 'scan?target=' + target
+      url: constants.urls.ssh + 'scan?target=' + target,
     });
-  } else {  // scan initiated, waiting on results
+  } else {
+    // scan initiated, waiting on results
     $.ajax({
       method: 'GET',
-      error: function e() { utils.errorResults('Scan failed', 'ssh'); },
+      error: function e() {
+        utils.errorResults('Scan failed', 'ssh');
+      },
       success: loadSuccessCallbackAwaitingResults,
-      url: constants.urls.ssh + 'scan/results?uuid=' + state.uuid
+      url: constants.urls.ssh + 'scan/results?uuid=' + state.uuid,
     });
   }
 };
-
 
 const loadSuccessCallbackInitialize = async (data) => {
   if (data.uuid === undefined) {
@@ -132,13 +142,13 @@ const loadSuccessCallbackInitialize = async (data) => {
   }
 };
 
-
 const loadSuccessCallbackAwaitingResults = async (data) => {
   // if we have ssh_scan_version, we can move onto putting it into the page
   if (data.status === 'COMPLETED') {
     state.results = data;
     insert();
-  } else if (state.count >= 15 || state.status === 'ERRORED') { // if we haven't haven't gotten results for 30 seconds, let's give up
+  } else if (state.count >= 15 || state.status === 'ERRORED') {
+    // if we haven't haven't gotten results for 30 seconds, let's give up
     $('#ssh-progress-bar-container').remove();
     $('#ssh-scanner-alert').removeClass('d-none');
   } else {
@@ -147,6 +157,5 @@ const loadSuccessCallbackAwaitingResults = async (data) => {
     load();
   }
 };
-
 
 export default { load, state };

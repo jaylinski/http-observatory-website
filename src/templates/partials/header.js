@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+export default (title) => `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -13,7 +13,7 @@
     <link rel="icon" type="image/png" sizes="196x196" href="/images/favicons/favicon-196x196.png">
     <link rel="shortcut icon" href="/images/favicons/favicon.ico">
 
-    <title>${require('../../js/constants.js').title}</title>
+    <title>${title}</title>
 </head>
 <body>
     <header class="mb-0 mb-md-3">
@@ -59,4 +59,4 @@
     </header>
 
     <!-- main content -->
-    <div class="container mb-3">
+    <div class="container mb-3">`;

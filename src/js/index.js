@@ -1,8 +1,5 @@
 import $ from 'jquery';
 import 'bootstrap';
-import Chart from 'chart.js';
-
-import { forEach, includes, last, size, sum } from 'lodash';
 
 import '../css/index.scss';
 import Observatories from './observatories/observatories.js';
@@ -22,29 +19,28 @@ const Observatory = {
 
   insertSurveyBanner: async function insertSurveyBanner() {
     // var surveyName = 'OBSERVATORY_SURVEY_2018_01';
-
+    //
     // if they've taken the survey before, let's not show them the banner
     // if (utils.readCookie(surveyName) !== null) {
     //   return;
     // }
-
+    //
     // bind a function such that when somebody clicks the close button on the survey banner,
     // it hides it forever. Same with when the click the link to take the survey.
     // $('#survey-banner a').on('click', function() {
     //   utils.setCookie(surveyName, 'True', 60);
     // });
-
+    //
     // change the URL for survey link
     // $('#survey-banner-url').attr('href',
     //   'https://qsurvey.mozilla.com/s3/Observatory-survey?grade=' +
     //     encodeURIComponent(Observatory.state.scan.grade) +
     //     '&ScanID=' +
     //     Observatory.state.scan.scan_id.toString().split(' ')[0]);
-
+    //
     // unhide the banner
     // $('#survey-banner').removeClass('d-none');
   },
-
 
   handleTabFragments: async function handleTabFragments() {
     var hash = window.location.hash;
@@ -56,13 +52,14 @@ const Observatory = {
     }
 
     // on page load, set the tab correctly
-    if (hash !== '') {  // HTTP Observatory (default)
+    if (hash !== '') {
+      // HTTP Observatory (default)
       hash = hash.split('#')[1];
       $(`#nav-${hash}-tab`).tab('show');
     }
 
     // set a handler to change the fragment whenever the tab is changed, ignoring HTTP Observatory
-    $('.nav-tabs a').on('shown.bs.tab', e => {
+    $('.nav-tabs a').on('shown.bs.tab', (e) => {
       if (e.target.hash === '#http') {
         history.pushState(null, null, window.location.pathname + window.location.search);
       } else {
@@ -73,7 +70,6 @@ const Observatory = {
     return undefined;
   },
 
-
   submitScanForAnalysis: function submitScanForAnalysis() {
     var hidden;
     var rescan;
@@ -81,7 +77,8 @@ const Observatory = {
 
     // get the hostname that was submitted -- if a api_url, extract the hostname
     var url = utils.urlParse($('#scan-input-hostname').val().toLowerCase());
-    if (url.host === '') { // blank hostname
+    if (url.host === '') {
+      // blank hostname
       Observatories.HTTP.displayError('Must enter hostname');
       return false;
     } else if (url.port !== '') {
@@ -93,7 +90,10 @@ const Observatory = {
       if (data.error !== undefined && data.error !== 'site down') {
         // if it's an IP address error, let them click through
         if (data.error === 'invalid-hostname-ip') {
-          $('#scan-alert-ip-link').attr('href', window.location.href + 'analyze/' + url.host + '#ssh');
+          $('#scan-alert-ip-link').attr(
+            'href',
+            window.location.href + 'analyze/' + url.host + '#ssh'
+          );
           $('#scan-alert-ip-address').text(url.host);
           $('#scan-alert-ip').removeClass('alert-hidden');
         } else {
@@ -113,7 +113,7 @@ const Observatory = {
       } else {
         window.location.href = `/analyze/index.html?host=${url.host}&${thirdPartyOpt}`;
       }
-      
+
       return true;
     };
 
@@ -121,28 +121,33 @@ const Observatory = {
     hidden = $('#scan-btn-hidden').prop('checked');
     rescan = $('#scan-btn-rescan').prop('checked');
 
-    if (rescan) {  // if they've set rescan, we'll poke the TLS Observatory now
+    if (rescan) {
+      // if they've set rescan, we'll poke the TLS Observatory now
       Observatories.TLS.load(rescan, true);
     }
 
-    Observatories.HTTP.submit(url.host, successCallback, Observatories.HTTP.displayError, 'POST', rescan, hidden);
+    Observatories.HTTP.submit(
+      url.host,
+      successCallback,
+      Observatories.HTTP.displayError,
+      'POST',
+      rescan,
+      hidden
+    );
 
     return false;
   },
-
 
   onPageLoad: async () => {
     // initialize all the popovers on larger displays
     if (window.matchMedia !== undefined) {
       if (window.matchMedia('(min-width: 480px)').matches) {
         $(function f() {
-          $('[data-toggle="popover"]').popover(
-            {
-              html: true,
-              placement: 'left',
-              trigger: 'hover'
-            }
-          );
+          $('[data-toggle="popover"]').popover({
+            html: true,
+            placement: 'left',
+            trigger: 'hover',
+          });
         });
       }
     }
@@ -162,27 +167,25 @@ const Observatory = {
       Observatory.handleTabFragments();
 
       // make it so that when we click a collapsed element, it removes it from the DOM
-      $('[data-toggle="collapse"]').click(
-        function f() {
-          $(this).remove();
-        }
-      );
+      $('[data-toggle="collapse"]').click(function f() {
+        $(this).remove();
+      });
 
       Observatories.HTTP.load();
       Observatories.TLS.load();
 
       // enable auto scans from the non-Observatory domain
-      if ((window.location.hostname !== constants.domain) || (window.location.hash === '#ssh')) {
+      if (window.location.hostname !== constants.domain || window.location.hash === '#ssh') {
         Observatories.SSH.load();
       } else {
         $('#ssh-scan-initiator-btn').on('click', Observatories.SSH.load);
-
       }
 
       // let's check the third parties if requested
       if (utils.getQueryParameter('third-party') !== 'false') {
         thirdParty.load();
-      } else {  // otherwise remove them all
+      } else {
+        // otherwise remove them all
         $('#third-party-tests').remove();
         $('#third-party-tests-page-header').remove();
       }
@@ -192,9 +195,8 @@ const Observatory = {
       // bind an event to the Scan Me button
       $('#scantron-form').on('submit', Observatory.submitScanForAnalysis);
     }
-  }
-
-}
+  },
+};
 
 /* load all the recent result stuff on page load */
 $(document).ready(() => {

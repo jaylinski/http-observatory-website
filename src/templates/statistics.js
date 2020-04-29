@@ -1,5 +1,8 @@
-<%= require ('html-loader?interpolate!./partials/header.html') %>
+import baseLayout from './layouts/base.js';
+import constants from './../js/constants.js';
 
+const title = `${constants.title} – Statistics`;
+const content = `
     <div id="statistics">
         <h1 class="page-header h2 m-t-1">HTTP Observatory</h1>
 
@@ -114,6 +117,6 @@
             <canvas id="ssh-observatory-chart-grade-distribution" height="200"></canvas>
         </div>
 
-    </div>
+    </div>`;
 
-<%= require ('html-loader!./partials/footer.html') %>
+export default `${baseLayout(title, content)}`;
